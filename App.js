@@ -7,39 +7,20 @@ import SelectDropdown from "react-native-select-dropdown";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import Hyperlink from "react-native-hyperlink";
 
+import { addCategoryNews, filterCategories } from "./utils";
+import { SOURCE_API } from "./constants";
+
 export default function App() {
   const [data, setData] = useState();
   const [categories, setCatogries] = useState();
   const [categoryNews, setCategoryNews] = useState();
   const [id, setId] = useState(null);
 
-  const filterCategories = (sources) => {
-    const categories = sources.map((ele) => ele.category);
-    const uniqueCategories = [...new Set(categories)];
-    setCatogries(uniqueCategories);
-  };
-
-  const addCategoryNews = async (category) => {
-    console.log("the category is", category);
-    const response = await axios.get(
-      `https://newsapi.org/v2/top-headlines/sources?category=${category}`,
-      {
-        params: {
-          apiKey: `3a1084e8676a470db3d24757aac34989`,
-        },
-      }
-    );
-    console.log("the response is", response.data.sources);
-    setCategoryNews(response.data.sources);
-  };
-
   useEffect(() => {
     const getData = async () => {
-      const data = await axios.get(
-        "https://newsapi.org/v2/top-headlines/sources?apiKey=3a1084e8676a470db3d24757aac34989"
-      );
+      const data = await axios.get(SOURCE_API);
       setData(data.data.sources);
-      filterCategories(data.data.sources);
+      setCatogries(filterCategories(data.data.sources));
     };
 
     getData();
@@ -54,7 +35,7 @@ export default function App() {
         data={categories}
         onSelect={(selectedItem, index) => {
           console.log(selectedItem);
-          addCategoryNews(selectedItem);
+          setCategoryNews(addCategoryNews(selectedItem));
         }}
         renderButton={(selectedItem, isOpened) => {
           return (
@@ -86,7 +67,7 @@ export default function App() {
       />
 
       {categoryNews &&
-        categoryNews.map((ele) => {
+        categoryNews?.map((ele) => {
           return (
             <View key={ele.id} styles={styles.newsView}>
               <Pressable
@@ -133,9 +114,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
 
-  heading:{
-   fontSize:20,
-   alignSelf:'center'
+  heading: {
+    fontSize: 20,
+    alignSelf: "center",
   },
 
   newsView: {
@@ -165,7 +146,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F1F3F5",
     borderRadius: 8,
     marginBottom: 8,
-    width:'100%'
+    width: "100%",
   },
 
   dropdownButtonStyle: {
@@ -177,9 +158,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 12,
-    alignSelf:'center',
+    alignSelf: "center",
     marginTop: 20,
-    marginBottom:20
+    marginBottom: 20,
   },
 
   dropdownButtonTxtStyle: {
@@ -224,4 +205,3 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
 });
-
