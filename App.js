@@ -1,109 +1,52 @@
-import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View, Pressable, ScrollView } from "react-native";
 import { useEffect, useState } from "react";
-import axios from "axios";
 import SelectDropdown from "react-native-select-dropdown";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import Hyperlink from "react-native-hyperlink";
 
-import { addCategoryNews, filterCategories } from "./utils";
-import { SOURCE_API } from "./constants";
+import { filterCategories } from "./utils";
+
+import { useDispatch, useSelector } from "react-redux";
+import { getCategoryNews, getSources } from "./Redux/newsSlice";
+import Dropdown from "./Components/Dropdown";
+import CategoryNews from "./Components/CategoryNews";
 
 export default function App() {
-  const [categories, setCatogries] = useState();
-  const [categoryNews, setCategoryNews] = useState();
+  const dispatch = useDispatch();
+
   const [id, setId] = useState(null);
+  const { sources, categoryNews, loading, error } = useSelector(
+    (state) => state.news
+  );
+
+  const categories = filterCategories(sources);
 
   useEffect(() => {
-    const getData = async () => {
-      const response = await axios.get(SOURCE_API);
-      let data = response?.data?.sources;
-      if (data.length <= 0) {
-        data = [{ category: "No data at the moment 🤧.Please try later" }];
-      }
-      setCatogries(filterCategories(data));
-    };
-
-    getData();
-
-    console.log("hey");
-  }, []);
+    dispatch(getSources());
+  }, [categoryNews]);
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.heading}>Pocket News App </Text>
-      <SelectDropdown
-        data={categories}
-        onSelect={(selectedItem, index) => {
-          console.log(selectedItem);
-          addCategoryNews(selectedItem).then((categories) => {
-            console.log("cat is 😶‍🌫️😶‍🌫️😶‍🌫️", categories);
-            setCategoryNews(categories);
-          });
-        }}
-        renderButton={(selectedItem, isOpened) => {
-          return (
-            <View style={styles.dropdownButtonStyle}>
-              <Text style={styles.dropdownButtonTxtStyle}>
-                {(selectedItem && selectedItem) || "Select categoty"}
-              </Text>
-              <Icon
-                name={isOpened ? "chevron-up" : "chevron-down"}
-                style={styles.dropdownButtonArrowStyle}
-              />
-            </View>
-          );
-        }}
-        renderItem={(item, index, isSelected) => {
-          return (
-            <View
-              style={{
-                ...styles.dropdownItemStyle,
-                ...(isSelected && { backgroundColor: "#D2D9DF" }),
-              }}
-            >
-              <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
-            </View>
-          );
-        }}
-        showsVerticalScrollIndicator={false}
-        dropdownStyle={styles.dropdownMenuStyle}
-      />
+    <>
+      {loading ? (
+        <View style={styles.loadingView}>
+          <Text style={{ fontSize: 30 }}>Loading...</Text>
+        </View>
+      ) : (
+        <ScrollView style={styles.container}>
+          <Text style={styles.heading}>Pocket News App </Text>
+          <Dropdown categories={categories} />
 
-      {categoryNews &&
-        categoryNews?.map((ele) => {
-          return (
-            <View key={ele.id} styles={styles.newsView}>
-              <Pressable
-                style={styles.categoryPressable}
-                onPress={() => {
-                  console.log("this is clicked");
-                  if (id == null) {
-                    setId(ele.id);
-                  } else setId(null);
-                }}
-              >
-                <Text Style={{ color: "red" }}>{ele.name}</Text>
-                <Icon
-                  name={id == ele.id ? "chevron-up" : "chevron-down"}
-                  style={styles.dropdownButtonArrowStyle}
-                />
-              </Pressable>
-              {id == ele.id && (
-                <View>
-                  <Text>{ele.description}</Text>
-                  <Hyperlink
-                    linkStyle={styles.link}
-                    onPressIn={(e) => e.stopPropagation()}
-                  >
-                    <Text>{ele.url}</Text>
-                  </Hyperlink>
+          {categoryNews &&
+            categoryNews?.map((ele) => {
+              return (
+                <View key={ele.id} styles={styles.newsView}>
+                  <CategoryNews ele={ele} id={id} setId={setId} />
                 </View>
-              )}
-            </View>
-          );
-        })}
-    </ScrollView>
+              );
+            })}
+        </ScrollView>
+      )}
+    </>
   );
 }
 
@@ -115,9 +58,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
 
-  heading: {
-    fontSize: 20,
-    alignSelf: "center",
+  loadingView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    height: "100%",
+    width: "100%",
   },
 
   newsView: {
@@ -133,76 +79,8 @@ const styles = StyleSheet.create({
     padding: 12,
   },
 
-  link: {
-    color: "#007BFF",
-    textDecorationLine: "underline",
-    marginTop: 4,
-  },
-
-  categoryPressable: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: 12,
-    backgroundColor: "#F1F3F5",
-    borderRadius: 8,
-    marginBottom: 8,
-    width: "100%",
-  },
-
-  dropdownButtonStyle: {
-    width: 200,
-    height: 50,
-    backgroundColor: "#E9ECEF",
-    borderRadius: 12,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 12,
+  heading: {
+    fontSize: 20,
     alignSelf: "center",
-    marginTop: 20,
-    marginBottom: 20,
-  },
-
-  dropdownButtonTxtStyle: {
-    flex: 1,
-    fontSize: 18,
-    fontWeight: "500",
-    color: "#151E26",
-  },
-
-  dropdownButtonArrowStyle: {
-    fontSize: 28,
-  },
-
-  dropdownButtonIconStyle: {
-    fontSize: 28,
-    marginRight: 8,
-  },
-
-  dropdownMenuStyle: {
-    backgroundColor: "#E9ECEF",
-    borderRadius: 8,
-  },
-
-  dropdownItemStyle: {
-    width: "100%",
-    flexDirection: "row",
-    paddingHorizontal: 12,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 8,
-  },
-
-  dropdownItemTxtStyle: {
-    flex: 1,
-    fontSize: 18,
-    fontWeight: "500",
-    color: "#151E26",
-  },
-
-  dropdownItemIconStyle: {
-    fontSize: 28,
-    marginRight: 8,
   },
 });
