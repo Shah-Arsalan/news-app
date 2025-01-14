@@ -2,7 +2,6 @@ import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View, Pressable, ScrollView } from "react-native";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Picker } from "@react-native-picker/picker";
 import SelectDropdown from "react-native-select-dropdown";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import Hyperlink from "react-native-hyperlink";
@@ -11,16 +10,18 @@ import { addCategoryNews, filterCategories } from "./utils";
 import { SOURCE_API } from "./constants";
 
 export default function App() {
-  const [data, setData] = useState();
   const [categories, setCatogries] = useState();
   const [categoryNews, setCategoryNews] = useState();
   const [id, setId] = useState(null);
 
   useEffect(() => {
     const getData = async () => {
-      const data = await axios.get(SOURCE_API);
-      setData(data.data.sources);
-      setCatogries(filterCategories(data.data.sources));
+      const response = await axios.get(SOURCE_API);
+      let data = response?.data?.sources;
+      if (data.length <= 0) {
+        data = [{ category: "No data at the moment 🤧.Please try later" }];
+      }
+      setCatogries(filterCategories(data));
     };
 
     getData();
@@ -35,7 +36,10 @@ export default function App() {
         data={categories}
         onSelect={(selectedItem, index) => {
           console.log(selectedItem);
-          setCategoryNews(addCategoryNews(selectedItem));
+          addCategoryNews(selectedItem).then((categories) => {
+            console.log("cat is 😶‍🌫️😶‍🌫️😶‍🌫️", categories);
+            setCategoryNews(categories);
+          });
         }}
         renderButton={(selectedItem, isOpened) => {
           return (
@@ -99,7 +103,6 @@ export default function App() {
             </View>
           );
         })}
-      {/* <StatusBar style="auto" /> */}
     </ScrollView>
   );
 }
@@ -108,8 +111,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F9FAFB",
-    // alignItems: "flex-start",
-    // justifyContent: "flex-start",
     paddingTop: 50,
     paddingHorizontal: 16,
   },
