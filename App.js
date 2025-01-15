@@ -37,10 +37,10 @@ export default function App() {
           <Dropdown categories={categories} />
 
           {categoryNews &&
-            categoryNews?.map((ele) => {
+            categoryNews?.map((element) => {
               return (
-                <View key={ele.id} styles={styles.newsView}>
-                  <CategoryNews ele={ele} id={id} setId={setId} />
+                <View key={element.id} styles={styles.newsView}>
+                  <CategoryNews element={element} id={id} setId={setId} />
                 </View>
               );
             })}

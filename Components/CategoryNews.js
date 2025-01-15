@@ -2,31 +2,31 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import Hyperlink from "react-native-hyperlink";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
-const CategoryNews = ({ ele, id, setId }) => {
+const CategoryNews = ({ element, id, setId }) => {
   return (
     <View>
       <Pressable
         style={styles.categoryPressable}
         onPress={() => {
           if (id == null) {
-            setId(ele.id);
+            setId(element.id);
           } else setId(null);
         }}
       >
-        <Text>{ele.name}</Text>
+        <Text>{element.name}</Text>
         <Icon
-          name={id == ele.id ? "chevron-up" : "chevron-down"}
+          name={id == element.id ? "chevron-up" : "chevron-down"}
           style={styles.dropdownButtonArrowStyle}
         />
       </Pressable>
-      {id == ele.id && (
+      {id == element.id && (
         <View>
-          <Text>{ele.description}</Text>
+          <Text>{element.description}</Text>
           <Hyperlink
             linkStyle={styles.link}
             onPressIn={(e) => e.stopPropagation()}
           >
-            <Text>{ele.url}</Text>
+            <Text>{element.url}</Text>
           </Hyperlink>
         </View>
       )}

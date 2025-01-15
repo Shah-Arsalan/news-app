@@ -20,7 +20,7 @@ const Dropdown = ({ categories }) => {
         return (
           <View style={styles.dropdownButtonStyle}>
             <Text style={styles.dropdownButtonTxtStyle}>
-              {(selectedItem && selectedItem) || "Select category"}
+              { selectedItem || "Select category"}
             </Text>
             <Icon
               name={isOpened ? "chevron-up" : "chevron-down"}
@@ -37,7 +37,7 @@ const Dropdown = ({ categories }) => {
               ...(isSelected && { backgroundColor: "#D2D9DF" }),
             }}
           >
-            <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
+            <Text style={styles.dropdownItemTextStyle}>{item}</Text>
           </View>
         );
       }}
@@ -94,15 +94,10 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
 
-  dropdownItemTxtStyle: {
+  dropdownItemTextStyle: {
     flex: 1,
     fontSize: 18,
     fontWeight: "500",
     color: "#151E26",
-  },
-
-  dropdownItemIconStyle: {
-    fontSize: 28,
-    marginRight: 8,
   },
 });
