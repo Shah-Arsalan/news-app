@@ -9,6 +9,7 @@ const initialState = {
   categoryNews: [],
   loading: false,
   error: null,
+  newcategories: [],
 };
 
 export const getSources = createAsyncThunk(
@@ -33,6 +34,48 @@ export const getCategoryNews = createAsyncThunk(
         },
       });
       return response?.data?.sources;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const postCategories = createAsyncThunk(
+  "postCategories",
+  async ({ token, categories }, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(
+        "https://eeb0-2405-201-5510-c070-f0a3-41ae-acd4-52b3.ngrok-free.app/category",
+        {
+          categories: categories,
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+        }
+      );
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const getCategories = createAsyncThunk(
+  "getCategories",
+  async (token, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        "https://eeb0-2405-201-5510-c070-f0a3-41ae-acd4-52b3.ngrok-free.app/category",
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const categories = response?.data?.categories?.map((ele) => ele.category);
+      return categories;
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -68,6 +111,19 @@ export const newsSlice = createSlice({
         state.loading = false;
       })
       .addCase(getCategoryNews.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      .addCase(getCategories.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getCategories.fulfilled, (state, action) => {
+        state.newcategories = action.payload;
+        state.loading = false;
+      })
+      .addCase(getCategories.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
